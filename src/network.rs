@@ -8,7 +8,7 @@ use std::net::IpAddr;
 
 use std::thread::{self};
 
-const BROADCAST_ADDR: &str = "192.168.100.255:11111";
+const BROADCAST_ADDR: &str = "192.168.100.255:34254";
 
 pub fn get_local_network_addr() -> IpAddr {
     let my_local_ip = local_ip().unwrap();
@@ -40,18 +40,21 @@ fn ping_broadcast_channel(socket: UdpSocket) -> Result<(), Error> {
 pub fn listen_to_broadcast_address() {
     let listen_thread = thread::spawn(|| {
         let socket: UdpSocket = UdpSocket::bind(BROADCAST_ADDR).unwrap();
+        println!("Listen socket addr: {:?}", BROADCAST_ADDR);
+
         let connection_timeout = Some(Duration::new(5, 0));
         socket.set_broadcast(true).unwrap();
         socket.set_read_timeout(connection_timeout).unwrap();
         println!("Awaiting responses..."); // self.recv_buff is a [u8; 8092]
         let mut recv_buff = [0u8; 8092];
         while let Ok((n, addr)) = socket.recv_from(&mut recv_buff) {
-            println!("{} bytes response from {:?}", n, addr);
+            println!("{} bytes recieved from {:?}", n, addr);
 
             // Remaining code not directly relevant to the question
         }
     });
 
+    listen_thread.join().unwrap();
     let _send_thread = thread::spawn(|| {
         let socket: UdpSocket = UdpSocket::bind(BROADCAST_ADDR).unwrap();
         socket.set_broadcast(true).unwrap();
@@ -61,13 +64,7 @@ pub fn listen_to_broadcast_address() {
         println!("Timeout: {:?}", socket.read_timeout());
         let _ = ping_broadcast_channel(socket);
     });
-
-    listen_thread.join().unwrap();
 }
-
-fn get_ip_addr() {}
-
-fn main() {}
 
 //get local network adress
 //get mask
