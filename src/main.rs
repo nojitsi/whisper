@@ -1,7 +1,10 @@
+mod network;
+
+use die_exit::*;
+use std::io::{ErrorKind, Read, Write};
+use std::net::{Shutdown, TcpListener, TcpStream};
 use std::str::from_utf8;
 use std::thread;
-use std::net::{TcpListener, TcpStream, Shutdown};
-use std::io::{ErrorKind, Read, Write};
 
 const PORT_WIDTH: i32 = 70;
 
@@ -45,38 +48,43 @@ fn handle_client_msg(mut stream: TcpStream) {
             println!("Client request msg is: {}", client_msg);
             let response = "...shh!";
 
-            stream.write_all( response.as_bytes()).unwrap();
+            stream.write_all(response.as_bytes()).unwrap();
 
             let second_msg = "What do you want?";
-            stream.write_all( second_msg.as_bytes()).unwrap();
+            stream.write_all(second_msg.as_bytes()).unwrap();
 
             true
-        },
+        }
         Err(e) if e.kind() == ErrorKind::ConnectionAborted => {
             println!("ErrorKind::ConnectionAborted");
             false
         }
         Err(_) => {
-            println!("An error occurred, terminating connection with {}", stream.peer_addr().unwrap());
+            println!(
+                "An error occurred, terminating connection with {}",
+                stream.peer_addr().unwrap()
+            );
             stream.shutdown(Shutdown::Both).unwrap();
             false
         }
     } {}
 }
 
-fn handle_server(listener: TcpListener) { 
-
+fn handle_server(listener: TcpListener) {
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
                 println!("New connection: {}", stream.peer_addr().unwrap());
-                thread::spawn(move|| {
+                thread::spawn(move || {
                     // connection succeeded
                     handle_client_msg(stream);
                 });
             }
             Err(e) => {
-                println!("Error during trying to establish connection with client: {}", e);
+                println!(
+                    "Error during trying to establish connection with client: {}",
+                    e
+                );
                 /* connection failed */
             }
         }
@@ -87,6 +95,10 @@ fn handle_server(listener: TcpListener) {
 
 //client need to know server initiated with same code
 fn main() {
+    let addr = network::get_local_network_addr();
+
+    network::listen_to_broadcast_address();
+    die!();
     let mut is_this_server = false;
     let mut ping_client: TcpStream = match init_client() {
         Ok(client) => client,
@@ -102,7 +114,7 @@ fn main() {
             is_this_server = true;
 
             init_client().unwrap()
-        },
+        }
     };
 
     println!("Is this a server: {}", is_this_server);
@@ -119,19 +131,18 @@ fn main() {
         Ok(_) => {
             let server_msg = from_utf8(&read_buf).unwrap();
             println!("Server msg is: {}", server_msg);
-            
+
             true
-        },
+        }
         Err(_) => {
-            println!("An error occurred, terminating connection with {}", ping_client.peer_addr().unwrap());
+            println!(
+                "An error occurred, terminating connection with {}",
+                ping_client.peer_addr().unwrap()
+            );
             ping_client.shutdown(Shutdown::Both).unwrap();
             false
         }
     } {}
 
-    
-
-
     println!("Done");
-
 }
