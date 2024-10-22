@@ -1,7 +1,5 @@
 use local_ip_address::local_ip;
 
-use local_ip_address::*;
-
 use std::net::UdpSocket;
 use std::time::Duration;
 
@@ -12,10 +10,9 @@ use std::thread::{self, sleep};
 
 pub fn get_local_network_addr() -> IpAddr {
     let my_local_ip = local_ip().unwrap();
-    let broadcast_ip = local_broadcast_ip();
 
     println!("This is my local IP address: {:?}", my_local_ip);
-    println!("Broadcast ip: {:?}", broadcast_ip);
+    println!("Broadcast ip: {:?}", "255.255.255.255");
 
     match broadcast_ip {
         Ok(ip) => return ip,
