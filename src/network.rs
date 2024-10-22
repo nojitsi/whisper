@@ -14,10 +14,7 @@ pub fn get_local_network_addr() -> IpAddr {
     println!("This is my local IP address: {:?}", my_local_ip);
     println!("Broadcast ip: {:?}", "255.255.255.255");
 
-    match broadcast_ip {
-        Ok(ip) => return ip,
-        Err(e) => panic!("broadcast_ip not found"),
-    };
+    return my_local_ip;
 }
 
 fn ping_broadcast_channel(socket: UdpSocket) -> Result<(), Error> {
