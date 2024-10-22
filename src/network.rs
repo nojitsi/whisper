@@ -8,7 +8,7 @@ use std::net::IpAddr;
 
 use std::thread::{self};
 
-const BROADCAST_ADDR: &str = "192.168.100.255:0";
+const BROADCAST_ADDR: &str = "192.168.100.255:11111";
 
 pub fn get_local_network_addr() -> IpAddr {
     let my_local_ip = local_ip().unwrap();
