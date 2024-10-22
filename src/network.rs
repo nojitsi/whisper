@@ -37,7 +37,7 @@ fn ping_broadcast_channel(socket: UdpSocket) -> Result<(), Error> {
 
 pub fn listen_to_broadcast_address() {
     let listen_thread = thread::spawn(|| {
-        let socket: UdpSocket = UdpSocket::bind("192.168.100.255:0").unwrap();
+        let socket: UdpSocket = UdpSocket::bind("192.168.100.255:11111").unwrap();
         let connection_timeout = Some(Duration::new(5, 0));
         socket.set_broadcast(true).unwrap();
         socket.set_read_timeout(connection_timeout).unwrap();
