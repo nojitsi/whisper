@@ -6,7 +6,7 @@ use std::time::Duration;
 use std::io::{Error, ErrorKind};
 use std::net::IpAddr;
 
-use std::thread::{self, sleep};
+use std::thread::{self};
 
 pub fn get_local_network_addr() -> IpAddr {
     let my_local_ip = local_ip().unwrap();
