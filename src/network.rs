@@ -8,11 +8,13 @@ use std::net::IpAddr;
 
 use std::thread::{self};
 
+const BROADCAST_ADDR: &str = "192.168.100.255:0";
+
 pub fn get_local_network_addr() -> IpAddr {
     let my_local_ip = local_ip().unwrap();
 
     println!("This is my local IP address: {:?}", my_local_ip);
-    println!("Broadcast ip: {:?}", "255.255.255.255");
+    println!("Broadcast ip: {:?}", BROADCAST_ADDR);
 
     return my_local_ip;
 }
@@ -37,7 +39,7 @@ fn ping_broadcast_channel(socket: UdpSocket) -> Result<(), Error> {
 
 pub fn listen_to_broadcast_address() {
     let listen_thread = thread::spawn(|| {
-        let socket: UdpSocket = UdpSocket::bind("192.168.100.255:11111").unwrap();
+        let socket: UdpSocket = UdpSocket::bind(BROADCAST_ADDR).unwrap();
         let connection_timeout = Some(Duration::new(5, 0));
         socket.set_broadcast(true).unwrap();
         socket.set_read_timeout(connection_timeout).unwrap();
@@ -51,7 +53,7 @@ pub fn listen_to_broadcast_address() {
     });
 
     let _send_thread = thread::spawn(|| {
-        let socket: UdpSocket = UdpSocket::bind("255.255.255.255:0").unwrap();
+        let socket: UdpSocket = UdpSocket::bind(BROADCAST_ADDR).unwrap();
         socket.set_broadcast(true).unwrap();
         // println!("Connected on port {}", port);
         println!("Broadcast: {:?}", socket.broadcast());
