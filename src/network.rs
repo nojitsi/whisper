@@ -61,10 +61,8 @@ pub fn create_listen_thread() -> JoinHandle<()> {
     });
 }
 
-pub fn listen_to_broadcast_address() {
-    //let listen_thread = create_listen_thread();
-    //listen_thread.join().unwrap();
-    let _send_thread = thread::spawn(|| {
+pub fn create_send_thread() -> JoinHandle<()> {
+    return thread::spawn(|| {
         let socket = UdpSocket::bind(BROADCAST_ADDR_IN).unwrap();
 
         socket
@@ -75,7 +73,14 @@ pub fn listen_to_broadcast_address() {
         println!("Timeout: {:?}", socket.read_timeout());
         let _ = ping_broadcast_channel(socket);
     });
-    _send_thread.join().unwrap();
+}
+
+pub fn listen_to_broadcast_address() {
+    let listen_thread = create_listen_thread();
+    listen_thread.join().unwrap();
+
+    //let _send_thread = create_send_thread();
+    //_send_thread.join().unwrap();
 }
 
 //get local network adress
