@@ -6,15 +6,17 @@ use std::time::Duration;
 use std::io::{Error, ErrorKind};
 use std::net::IpAddr;
 
-use std::thread::{self};
+use std::thread::{self, JoinHandle};
 
-const BROADCAST_ADDR: &str = "0.0.0.0:8892";
+const BROADCAST_ADDR_OUT: &str = "255.255.255.255:8892";
+const BROADCAST_ADDR_IN: &str = "0.0.0.0:8892";
 
 pub fn get_local_network_addr() -> IpAddr {
     let my_local_ip = local_ip().unwrap();
 
     println!("This is my local IP address: {:?}", my_local_ip);
-    println!("Broadcast ip: {:?}", BROADCAST_ADDR);
+    println!("Broadcast out ip: {:?}", BROADCAST_ADDR_OUT);
+    println!("Broadcast in ip: {:?}", BROADCAST_ADDR_IN);
 
     return my_local_ip;
 }
@@ -37,14 +39,16 @@ fn ping_broadcast_channel(socket: UdpSocket) -> Result<(), Error> {
     }
 }
 
-pub fn listen_to_broadcast_address() {
-    let listen_thread = thread::spawn(|| {
-        let socket: UdpSocket = UdpSocket::bind(BROADCAST_ADDR).unwrap();
+pub fn create_listen_thread() -> JoinHandle<()> {
+    return thread::spawn(|| {
+        let socket: UdpSocket = UdpSocket::bind(BROADCAST_ADDR_IN).unwrap();
         println!("Listen socket addr: {:?}", socket.local_addr());
 
         let connection_timeout = Some(Duration::new(7, 0));
 
-        //socket.set_broadcast(true).unwrap();
+        socket
+            .set_broadcast(true)
+            .expect("Set broadcast for output socket failed");
         socket.set_read_timeout(connection_timeout).unwrap();
         println!("Awaiting responses..."); // self.recv_buff is a [u8; 8092]
         let mut recv_buff = [0u8; 8092];
@@ -53,20 +57,25 @@ pub fn listen_to_broadcast_address() {
 
             // Remaining code not directly relevant to the question
         }
+        println!("End of listen thread");
     });
+}
 
-    listen_thread.join().unwrap();
+pub fn listen_to_broadcast_address() {
+    //let listen_thread = create_listen_thread();
+    //listen_thread.join().unwrap();
     let _send_thread = thread::spawn(|| {
-        let socket: UdpSocket = UdpSocket::bind(BROADCAST_ADDR).unwrap();
+        let socket = UdpSocket::bind(BROADCAST_ADDR_IN).unwrap();
+
         socket
             .set_broadcast(true)
             .expect("Set broadcast for output socket failed");
-        // println!("Connected on port {}", port);
         println!("Broadcast: {:?}", socket.broadcast());
 
         println!("Timeout: {:?}", socket.read_timeout());
         let _ = ping_broadcast_channel(socket);
     });
+    _send_thread.join().unwrap();
 }
 
 //get local network adress
