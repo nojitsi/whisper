@@ -21,8 +21,8 @@ pub fn get_local_network_addr() -> IpAddr {
     return my_local_ip;
 }
 
-fn ping_broadcast_channel(socket: UdpSocket) -> Result<(), Error> {
-    match socket.send(&[0; 10]) {
+fn ping_broadcast_channel(socket: &UdpSocket) -> Result<(), Error> {
+    match socket.send_to(&[0; 10], BROADCAST_ADDR_OUT) {
         Ok(n) => {
             println!("{:?}", n);
             if n != [0; 10].len() {
@@ -71,16 +71,16 @@ pub fn create_send_thread() -> JoinHandle<()> {
         println!("Broadcast: {:?}", socket.broadcast());
 
         println!("Timeout: {:?}", socket.read_timeout());
-        let _ = ping_broadcast_channel(socket);
+        ping_broadcast_channel(&socket).unwrap();
     });
 }
 
 pub fn listen_to_broadcast_address() {
+    let _send_thread = create_send_thread();
+    _send_thread.join().unwrap();
+
     let listen_thread = create_listen_thread();
     listen_thread.join().unwrap();
-
-    //let _send_thread = create_send_thread();
-    //_send_thread.join().unwrap();
 }
 
 //get local network adress
